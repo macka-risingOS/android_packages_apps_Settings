@@ -15,6 +15,10 @@
    limitations under the License.
 -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <!-- App search preference -->
+    <string name="search">Search</string>
+    <string name="search_apps">Search apps</string>
+
     <!-- Notch: Full screen apps -->
     <string name="display_cutout_force_fullscreen_title">Full screen apps</string>
     <string name="display_cutout_force_fullscreen_summary">Force apps to ignore notch space</string>
