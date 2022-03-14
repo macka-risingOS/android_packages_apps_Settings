@@ -201,6 +201,8 @@ import com.android.settings.fragments.LockScreen;
 import com.android.settings.fragments.Themes;
 import com.android.settings.fragments.Toolbox;
 
+import ink.kscope.settings.wifi.tether.WifiTetherClientManager;
+
 public class SettingsGateway {
 
     /**
@@ -388,7 +390,8 @@ public class SettingsGateway {
             personalizationSettingsLayout.class.getName(),
             LockScreen.class.getName(),
             Themes.class.getName(),
-            Toolbox.class.getName()
+            Toolbox.class.getName(),
+            WifiTetherClientManager.class.getName()
     };
 
     public static final String[] SETTINGS_FOR_RESTRICTED = {
