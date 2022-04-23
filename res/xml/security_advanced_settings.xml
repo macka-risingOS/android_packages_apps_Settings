@@ -123,6 +123,15 @@
         android:fragment="com.android.settings.security.MemtagPage"
         settings:controller="com.android.settings.security.MemtagPagePreferenceController" />
 
+    <com.android.settings.preferences.SystemSwitchPreference
+        android:order="91"
+        android:key="pm_downgrade_allowed"
+        android:title="@string/app_downgrade_title"
+        android:summary="@string/app_downgrade_summary"
+        android:defaultValue="false"
+        settings:position="none"
+        settings:settings_type="global"/>
+
     <!-- work profile security section -->
     <PreferenceCategory
         android:order="310"
