@@ -21,7 +21,7 @@
     android:key="apps_screen"
     android:title="@string/apps_dashboard_title">
 
-    <Preference
+    <com.android.settings.preferences.ui.AdaptivePreference
         android:key="all_app_infos"
         android:title="@string/all_apps"
         android:summary="@string/summary_placeholder"
@@ -54,13 +54,14 @@
         android:visibility="gone"
         settings:searchable="false"/>
 
-    <Preference
+    <com.android.settings.preferences.ui.AdaptivePreference
         android:key="default_apps"
         android:title="@string/app_default_dashboard_title"
         android:order="-996"
+        settings:position="top"
         settings:controller="com.android.settings.applications.DefaultAppsPreferenceController">
         <intent android:action="android.settings.MANAGE_DEFAULT_APPS_SETTINGS"/>
-    </Preference>
+    </com.android.settings.preferences.ui.AdaptivePreference>
 
     <com.android.settings.preferences.SystemPropertyListPreference
         android:key="persist.sys.default_launcher"
@@ -70,7 +71,7 @@
         android:summary="%s"
         />
 
-    <Preference
+    <com.android.settings.preferences.ui.AdaptivePreference
         android:key="cloned_apps"
         android:title="@string/cloned_apps_dashboard_title"
         android:summary="@string/summary_placeholder"
@@ -81,13 +82,13 @@
             android:name="classname"
             android:value="com.android.settings.Settings$ClonedAppsListActivity"/>
         <intent android:action="android.settings.MANAGE_CLONED_APPS_SETTINGS"/>
-    </Preference>
+    </com.android.settings.preferences.ui.AdaptivePreference>
 
     <PreferenceCategory
         android:key="dashboard_tile_placeholder"
         android:order="10"/>
 
-    <Preference
+    <com.android.settings.preferences.ui.AdaptivePreference
         android:key="hibernated_apps"
         android:title="@string/unused_apps"
         android:summary="@string/summary_placeholder"
@@ -95,9 +96,9 @@
         settings:keywords="app_hibernation_key"
         settings:controller="com.android.settings.applications.HibernatedAppsPreferenceController">
         <intent android:action="android.intent.action.MANAGE_UNUSED_APPS"/>
-    </Preference>
+    </com.android.settings.preferences.ui.AdaptivePreference>
 
-    <Preference
+    <com.android.settings.preferences.ui.AdaptivePreference
         android:key="app_battery_usage"
         android:order="17"
         android:title="@string/app_battery_usage_title"
@@ -107,12 +108,13 @@
         <extra
             android:name="classname"
             android:value="com.android.settings.Settings$AppBatteryUsageActivity"/>
-    </Preference>
+    </com.android.settings.preferences.ui.AdaptivePreference>
 
-    <Preference
+    <com.android.settings.preferences.ui.AdaptivePreference
         android:key="special_access"
         android:fragment="com.android.settings.applications.specialaccess.SpecialAccessSettings"
         android:title="@string/special_access"
+        settings:position="bottom"
         android:order="20"/>
 
     <PreferenceCategory
@@ -121,17 +123,18 @@
         android:order="21"
         settings:searchable="false">
 
-        <Preference
+        <com.android.settings.preferences.ui.AdaptivePreference
             android:key="aspect_ratio_apps"
             android:title="@string/aspect_ratio_experimental_title"
             android:summary="@string/summary_placeholder"
+            ettings:position="solo"
             android:order="22"
             settings:controller="com.android.settings.applications.appcompat.UserAspectRatioAppsPreferenceController"
             android:fragment="com.android.settings.applications.manageapplications.ManageApplications">
             <extra android:name="classname"
                    android:value="com.android.settings.Settings$UserAspectRatioAppListActivity"/>
             <intent android:action="android.settings.MANAGE_USER_ASPECT_RATIO_SETTINGS"/>
-        </Preference>
+        </com.android.settings.preferences.ui.AdaptivePreference>
     </PreferenceCategory>
 
 </PreferenceScreen>

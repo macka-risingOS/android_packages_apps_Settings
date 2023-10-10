@@ -182,6 +182,7 @@ public class VolumeSeekBarPreference extends SeekBarPreference {
         if (mVolumizer == null) {
             mVolumizer = mSeekBarVolumizerFactory.create(mStream, sampleUri, sbvc);
         }
+        mSeekBar.setVisibility(View.VISIBLE);
         mVolumizer.start();
         mVolumizer.setSeekBar(mSeekBar);
         updateIconView();
