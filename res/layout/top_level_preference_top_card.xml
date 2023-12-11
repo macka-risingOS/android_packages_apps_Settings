@@ -82,6 +82,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:paddingHorizontal="16dp"
+            android:minWidth="48dp"
+            android:minHeight="48dp"
             android:layout_alignParentEnd="true"
             app:cardBackgroundColor="#00000000"
             app:cardElevation="0dp">

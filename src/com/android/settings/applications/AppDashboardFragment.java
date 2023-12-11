@@ -112,8 +112,7 @@ public class AppDashboardFragment extends DashboardFragment {
             if (preference.getKey() != null) {
                 boolean isAssistPreference = preference.getKey().equals("dashboard_tile_pref_com.google.android.apps.gsa.staticplugins.settings.AssistantAndroidSettingsActivity");
                 boolean isWellbeingPreference = preference.getKey().equals("dashboard_tile_pref_com.google.android.apps.wellbeing.home.AppsNotificationSettingsActivity");
-                boolean isQsPreference = preference.getKey().equals("persist.sys.default_launcher");
-                if (isAssistPreference || isWellbeingPreference || isQsPreference) {
+                if (isAssistPreference || isWellbeingPreference) {
                     preference.setLayoutResource(R.layout.top_level_preference_middle_card);
                 }
             }
