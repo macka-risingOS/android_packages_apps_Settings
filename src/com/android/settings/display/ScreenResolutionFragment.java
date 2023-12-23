@@ -1,19 +1,3 @@
-/*
- * Copyright (C) 2022 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.android.settings.display;
 
 import android.annotation.Nullable;
@@ -23,10 +7,12 @@ import android.content.res.Resources;
 import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.hardware.display.DisplayManager;
+import android.os.ServiceManager;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Display;
+import android.view.IWindowManager;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
 
@@ -68,10 +54,18 @@ public class ScreenResolutionFragment extends RadioButtonPickerFragment {
 
     private int mHighWidth;
     private int mFullWidth;
+    private int mHighHeight;
+    private int mFullHeight;
+    
+    private IWindowManager mWm;
+    private float baseDensity;
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+
+        mWm = IWindowManager.Stub.asInterface(ServiceManager.checkService(
+                Context.WINDOW_SERVICE));
 
         mDefaultDisplay =
                 context.getSystemService(DisplayManager.class).getDisplay(Display.DEFAULT_DISPLAY);
@@ -86,12 +80,19 @@ public class ScreenResolutionFragment extends RadioButtonPickerFragment {
         mResolutions = controller.getAllSupportedResolutions();
         mHighWidth = controller.getHighWidth();
         mFullWidth = controller.getFullWidth();
-        Log.i(TAG, "mHighWidth:" + mHighWidth + "mFullWidth:" + mFullWidth);
+        mHighHeight = controller.getHighHeight();
+        mFullHeight = controller.getFullHeight();
+        Log.i(TAG, "mHighWidth: " + mHighWidth + "mFullWidth: " + mFullWidth);
         mScreenResolutionSummaries =
                 new String[] {
-                    mHighWidth + " x " + controller.getHighHeight(),
-                    mFullWidth + " x " + controller.getFullHeight()
+                    mHighWidth + " x " + mHighHeight,
+                    mFullWidth + " x " + mFullHeight
                 };
+                
+        String selectedResolution = Settings.System.getString(
+                getContext().getContentResolver(), SCREEN_RESOLUTION);
+        String defaultKey = getKeyForResolution(selectedResolution);
+        setDefaultKey(defaultKey);
     }
 
     @Override
@@ -139,18 +140,6 @@ public class ScreenResolutionFragment extends RadioButtonPickerFragment {
         return candidates;
     }
 
-    /** Get prefer display mode. */
-    private Display.Mode getPreferMode(int width) {
-        for (Point resolution : mResolutions) {
-            if (resolution.x == width) {
-                return new Display.Mode(
-                        resolution.x, resolution.y, getDisplayMode().getRefreshRate());
-            }
-        }
-
-        return getDisplayMode();
-    }
-
     /** Get current display mode. */
     @VisibleForTesting
     public Display.Mode getDisplayMode() {
@@ -159,43 +148,95 @@ public class ScreenResolutionFragment extends RadioButtonPickerFragment {
 
     /** Using display manager to set the display mode. */
     @VisibleForTesting
-    public void setDisplayMode(final int width) {
-        Display.Mode mode = getPreferMode(width);
+    public void setDisplayMode(final String resolution) {
+        Point resolutionPoint = parseResolution(resolution);
+        if (resolutionPoint == null) {
+            return;
+        }
+
+        int width = resolutionPoint.x;
+        int height = resolutionPoint.y;
+
+        Display.Mode switchMode = new Display.Mode(width, height, getDisplayMode().getRefreshRate());
+        Display.Mode fullMode = new Display.Mode(mFullWidth, mFullHeight, getDisplayMode().getRefreshRate());
 
         mDisplayObserver.startObserve();
 
-        /** For store settings globally. */
-        /** TODO(b/259797244): Remove this once the atom is fully populated. */
+        // Store settings globally
         Settings.System.putString(
                 getContext().getContentResolver(),
                 SCREEN_RESOLUTION,
-                mode.getPhysicalWidth() + "x" + mode.getPhysicalHeight());
+                switchMode.getPhysicalWidth() + "x" + switchMode.getPhysicalHeight());
 
         try {
-            /** Apply the resolution change. */
-            Log.i(TAG, "setUserPreferredDisplayMode: " + mode);
-            mDefaultDisplay.setUserPreferredDisplayMode(mode);
+            baseDensity = (float) mWm.getBaseDisplayDensity(Display.DEFAULT_DISPLAY);
+            if (resolution == mFullWidth + " x " + mFullHeight) {
+                mDefaultDisplay.setUserPreferredDisplayMode(fullMode);
+                mWm.setForcedDisplaySize(Display.DEFAULT_DISPLAY, (int) fullMode.getPhysicalWidth(), (int) fullMode.getPhysicalHeight());
+            } else {
+                mDefaultDisplay.setUserPreferredDisplayMode(switchMode);
+                mWm.setForcedDisplaySize(Display.DEFAULT_DISPLAY, (int) switchMode.getPhysicalWidth(), (int) switchMode.getPhysicalHeight());
+            }
+            DisplayDensityUtils density = new DisplayDensityUtils(getContext());
+            int[] densityValues = density.getDefaultDisplayDensityValues();
+            double newDensity = baseDensity * mFullWidth / width;
+            int minDistance = Math.abs(densityValues[0] - (int) newDensity);
+            int idx = 0;
+
+            for (int i = 1; i < densityValues.length; i++) {
+                int dist = Math.abs(densityValues[i] - (int) newDensity);
+                if (dist < minDistance) {
+                    minDistance = dist;
+                    idx = i;
+                }
+            }
+            density.setForcedDisplayDensity(idx);
         } catch (Exception e) {
             Log.e(TAG, "setUserPreferredDisplayMode() failed", e);
             return;
         }
 
-        /** Send the atom after resolution changed successfully. */
+        // Send the atom after resolution changed successfully
         SettingsStatsLog.write(
                 SettingsStatsLog.USER_SELECTED_RESOLUTION,
                 mDefaultDisplay.getUniqueId().hashCode(),
-                mode.getPhysicalWidth(),
-                mode.getPhysicalHeight());
+                switchMode.getPhysicalWidth(),
+                switchMode.getPhysicalHeight());
     }
 
     /** Get the key corresponding to the resolution. */
     @VisibleForTesting
-    String getKeyForResolution(int width) {
-        return width == mHighWidth
-                ? mScreenResolutionOptions[ScreenResolutionController.HIGHRESOLUTION_IDX]
-                : width == mFullWidth
-                        ? mScreenResolutionOptions[ScreenResolutionController.FULLRESOLUTION_IDX]
-                        : null;
+    String getKeyForResolution(String resolution) {
+        if (resolution != null) {
+            Point point = parseResolution(resolution);
+            if (point != null) {
+                int width = point.x;
+                return width == mHighWidth
+                        ? mScreenResolutionOptions[ScreenResolutionController.HIGHRESOLUTION_IDX]
+                        : width == mFullWidth
+                                ? mScreenResolutionOptions[ScreenResolutionController.FULLRESOLUTION_IDX]
+                                : null;
+            }
+        }
+        return null;
+    }
+
+    /** Parse resolution string to a Point object. */
+    @Nullable
+    private Point parseResolution(String resolution) {
+        if (resolution != null) {
+            String[] parts = resolution.split("x");
+            if (parts.length == 2) {
+                try {
+                    int width = Integer.parseInt(parts[0].trim());
+                    int height = Integer.parseInt(parts[1].trim());
+                    return new Point(width, height);
+                } catch (NumberFormatException e) {
+                    Log.e(TAG, "Error parsing resolution string", e);
+                }
+            }
+        }
+        return null;
     }
 
     /** Get the width corresponding to the resolution key. */
@@ -209,31 +250,48 @@ public class ScreenResolutionFragment extends RadioButtonPickerFragment {
 
     @Override
     protected String getDefaultKey() {
-        int physicalWidth = getDisplayMode().getPhysicalWidth();
-
-        return getKeyForResolution(physicalWidth);
+        String selectedResolution = Settings.System.getString(
+                getContext().getContentResolver(), SCREEN_RESOLUTION);
+        if (selectedResolution == null) {
+            int physicalWidth = getDisplayMode().getPhysicalWidth();
+            return getKeyForResolution(Integer.toString(physicalWidth));
+        }
+        return getKeyForResolution(selectedResolution);
     }
 
     @Override
     protected boolean setDefaultKey(final String key) {
-        int width = getWidthForResoluitonKey(key);
-        if (width < 0) {
+        String resolution = getResolutionForResolutionKey(key);
+        if (resolution == null) {
             return false;
         }
 
-        setDisplayMode(width);
+        setDisplayMode(resolution);
         updateIllustrationImage(mImagePreference);
 
         return true;
     }
 
+    private String getResolutionForResolutionKey(String key) {
+        int width = getWidthForResoluitonKey(key);
+        if (width < 0) {
+            return null;
+        }
+
+        return width == mHighWidth
+                ? mHighWidth + "x" + mHighHeight
+                : width == mFullWidth
+                        ? mFullWidth + "x" + mFullHeight
+                        : null;
+    }
+
     @Override
     public void onRadioButtonClicked(SelectorWithWidgetPreference selected) {
         String selectedKey = selected.getKey();
-        int selectedWidth = getWidthForResoluitonKey(selectedKey);
-        if (!mDisplayObserver.setPendingResolutionChange(selectedWidth)) {
-            return;
-        }
+        String resolution = getResolutionForResolutionKey(selectedKey);
+        
+        setDisplayMode(resolution);
+        Log.d("onRadioButtonClicked: setDisplayMode: ", "resolution: " + resolution);
 
         if (mAccessibilityManager.isEnabled()) {
             AccessibilityEvent event = AccessibilityEvent.obtain();
@@ -359,11 +417,10 @@ public class ScreenResolutionFragment extends RadioButtonPickerFragment {
                 return;
             }
 
-            if (!isDensityChanged() || !isResolutionChangeApplied()) {
+            if (!isDensityChanged()) {
                 return;
             }
 
-            restoreDensity();
             stopObserve();
         }
 
@@ -389,36 +446,6 @@ public class ScreenResolutionFragment extends RadioButtonPickerFragment {
                 return false;
             }
 
-            return true;
-        }
-
-        private int getCurrentWidth() {
-            final DisplayManager dm = mContext.getSystemService(DisplayManager.class);
-            return dm.getDisplay(Display.DEFAULT_DISPLAY).getMode().getPhysicalWidth();
-        }
-
-        private boolean setPendingResolutionChange(int selectedWidth) {
-            int currentWidth = getCurrentWidth();
-
-            if (selectedWidth == currentWidth) {
-                return false;
-            }
-            if (mPreviousWidth.get() != -1 && !isResolutionChangeApplied()) {
-                return false;
-            }
-
-            mPreviousWidth.set(currentWidth);
-
-            return true;
-        }
-
-        private boolean isResolutionChangeApplied() {
-            if (mPreviousWidth.get() == getCurrentWidth()) {
-                return false;
-            }
-
-            Log.i(TAG,
-                    "resolution changed from " + mPreviousWidth.get() + " to " + getCurrentWidth());
             return true;
         }
     }

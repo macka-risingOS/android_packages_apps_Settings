@@ -51,34 +51,6 @@ public class ScreenResolutionController extends BasePreferenceController {
 
         mDisplay =
                 mContext.getSystemService(DisplayManager.class).getDisplay(Display.DEFAULT_DISPLAY);
-
-        initSupportedResolutionData();
-    }
-
-    /**
-     * Initialize the resolution data. So far, we support two resolution switching. Save the width
-     * and the height for high resolution and full resolution.
-     */
-    private void initSupportedResolutionData() {
-        // Collect and filter the resolutions
-        Set<Point> resolutions = new HashSet<>();
-        for (Display.Mode mode : getSupportedModes()) {
-            resolutions.add(new Point(mode.getPhysicalWidth(), mode.getPhysicalHeight()));
-        }
-        mSupportedResolutions = resolutions;
-
-        // Get the width and height for high resolution and full resolution
-        List<Point> resolutionList = new ArrayList<>(resolutions);
-        if (resolutionList == null || resolutionList.size() != 2) {
-            Log.e(TAG, "No support");
-            return;
-        }
-
-        Collections.sort(resolutionList, (p1, p2) -> p1.x * p1.y - p2.x * p2.y);
-        mHighWidth = resolutionList.get(HIGHRESOLUTION_IDX).x;
-        mHighHeight = resolutionList.get(HIGHRESOLUTION_IDX).y;
-        mFullWidth = resolutionList.get(FULLRESOLUTION_IDX).x;
-        mFullHeight = resolutionList.get(FULLRESOLUTION_IDX).y;
     }
 
     /** Return true if the device contains two (or more) resolutions. */
@@ -88,7 +60,7 @@ public class ScreenResolutionController extends BasePreferenceController {
 
     @Override
     public int getAvailabilityStatus() {
-        return (checkSupportedResolutions()) ? AVAILABLE : UNSUPPORTED_ON_DEVICE;
+        return AVAILABLE;
     }
 
     @Override
@@ -113,22 +85,22 @@ public class ScreenResolutionController extends BasePreferenceController {
 
     /** Return the high resolution width of the device. */
     public int getHighWidth() {
-        return this.mHighWidth;
+        return (getFullWidth() / 4) * 3;
     }
 
     /** Return the full resolution width of the device. */
     public int getFullWidth() {
-        return this.mFullWidth;
+        return mDisplay.getMode().getPhysicalWidth();
     }
 
     /** Return the high resolution height of the device. */
     public int getHighHeight() {
-        return this.mHighHeight;
+        return (getFullHeight() / 4) * 3;
     }
 
     /** Return the full resolution height of the device. */
     public int getFullHeight() {
-        return this.mFullHeight;
+        return  mDisplay.getMode().getPhysicalHeight();
     }
 
     @VisibleForTesting
