@@ -114,24 +114,11 @@ public class BackGestureIndicatorView extends LinearLayout {
     private void setCurrentGestureHeight(WindowManager.LayoutParams lp) {
         Point displaySize = new Point();
         getContext().getDisplay().getRealSize(displaySize);
-
-        // mHeightScale cant be range 0 - 3
-        // 0 means full height
-        // 1 measns half of the screen
-        // 2 means lower third of the screen
-        // 3 means lower sicth of the screen
-        if (mHeightScale == 0) {
-            lp.height = displaySize.y;
-            lp.y = 0;
-        } else if (mHeightScale == 1) {
-            lp.height = displaySize.y / 2;
-            lp.y = displaySize.y - lp.height;
-        } else if (mHeightScale == 2) {
-            lp.height = displaySize.y / 3;
-            lp.y = displaySize.y - lp.height;
-        } else {
-            lp.height = displaySize.y / 6;
-            lp.y = displaySize.y - lp.height;
-        }
+        int[] heights = {displaySize.y, (displaySize.y / 4) * 3, displaySize.y / 2, displaySize.y / 3};
+        int[] yOffsets = {0, (displaySize.y / 4) * 3, displaySize.y / 2, displaySize.y / 3};
+        mHeightScale = Math.max(0, Math.min(mHeightScale, heights.length - 1));
+        lp.height = heights[mHeightScale];
+        lp.y = displaySize.y - yOffsets[mHeightScale];
     }
+
 }
