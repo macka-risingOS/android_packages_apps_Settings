@@ -19,11 +19,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:settings="http://schemas.android.com/apk/res-auto"
     android:key="my_device_info_pref_screen"
-    android:title="@string/about_rising_device">
-
-    <PreferenceCategory
-        android:selectable="false"
-        android:title="@string/device_header_info_category_title">
+    android:title="@string/about_settings">
 
         <com.android.settingslib.widget.LayoutPreference
             android:key="my_device_info_header"
@@ -32,32 +28,23 @@
             android:selectable="false"
             settings:isPreferenceVisible="true"/>
 
-    </PreferenceCategory>
-    
-    <PreferenceCategory
-        android:selectable="false"
-        android:title="@string/device_info_hw_sw_more">
-
         <com.android.settingslib.widget.LayoutPreference
             android:key="my_device_hw_header"
             android:order="-998"
             android:layout="@layout/about_device_info_hw"
             android:selectable="false"
             settings:isPreferenceVisible="true"/>
-            
-        <com.android.settingslib.widget.LayoutPreference
-            android:key="my_device_sw_header"
-            android:order="-997"
-            android:layout="@layout/about_device_info_sw"
-            android:selectable="false"
-            settings:isPreferenceVisible="true"/>
 
-        <com.android.settingslib.widget.LayoutPreference
-            android:key="my_device_sw2_header"
-            android:order="-996"
-            android:layout="@layout/about_device_info_sw2"
-            android:selectable="false"
-            settings:isPreferenceVisible="true"/>
+    <PreferenceCategory
+        android:selectable="false"
+        android:title="@string/build_status">
+
+        <Preference
+            android:key="rom_build_status"
+            settings:layout="@layout/rising_card_build_status"
+            android:order="-997"
+            settings:enableCopying="true"
+            android:selectable="true"/>
 
     </PreferenceCategory>
 
@@ -153,6 +140,14 @@
             settings:isPreferenceVisible="@bool/config_show_sim_info"
             settings:controller="com.android.settings.deviceinfo.imei.ImeiInfoPreferenceController"/>
 
+        <!-- Battery information -->
+        <com.android.settings.preferences.ui.AdaptivePreference
+            android:key="battery_info"
+            android:order="33"
+            android:title="@string/battery_info"
+            android:fragment="com.android.settings.deviceinfo.batteryinfo.BatteryInfoFragment"
+            settings:keywords="@string/keywords_battery_info"/>
+
         <!-- Android version -->
         <com.android.settings.preferences.ui.AdaptivePreference
             android:key="firmware_version"
@@ -163,14 +158,6 @@
             settings:position="bottom"
             android:fragment="com.android.settings.deviceinfo.firmwareversion.FirmwareVersionSettings"
             settings:controller="com.android.settings.deviceinfo.firmwareversion.FirmwareVersionPreferenceController"/>
-
-        <!-- Battery information -->
-        <Preference
-            android:key="battery_info"
-            android:order="43"
-            android:title="@string/battery_info"
-            android:fragment="com.android.settings.deviceinfo.batteryinfo.BatteryInfoFragment"
-            settings:keywords="@string/keywords_battery_info"/>
     </PreferenceCategory>
 
     <PreferenceCategory
