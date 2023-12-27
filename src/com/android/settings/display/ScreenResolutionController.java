@@ -85,7 +85,7 @@ public class ScreenResolutionController extends BasePreferenceController {
 
     /** Return the high resolution width of the device. */
     public int getHighWidth() {
-        return (getFullWidth() / 4) * 3;
+        return (int) Math.ceil(getFullWidth() * 0.75f);
     }
 
     /** Return the full resolution width of the device. */
@@ -95,7 +95,7 @@ public class ScreenResolutionController extends BasePreferenceController {
 
     /** Return the high resolution height of the device. */
     public int getHighHeight() {
-        return (getFullHeight() / 4) * 3;
+        return (int) Math.ceil(getFullHeight() * 0.75f);
     }
 
     /** Return the full resolution height of the device. */
