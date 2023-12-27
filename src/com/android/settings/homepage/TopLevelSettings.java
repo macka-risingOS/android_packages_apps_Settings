@@ -270,7 +270,7 @@ public class TopLevelSettings extends DashboardFragment implements SplitLayoutLi
                 final boolean messagesEnabled = Settings.System.getIntForUser(activity.getContentResolver(),
                             "settings_homepage_greetings", 0, UserHandle.USER_CURRENT) != 0;
                 String defaultSearchText = getContext().getResources().getString(R.string.search_settings);
-                searchTextView.setText(messagesEnabled ? defaultSearchText : getGreetings(getContext(), true));
+                searchTextView.setText(messagesEnabled ? getGreetings(getContext(), true) : defaultSearchText);
                 searchIcon.bringToFront();
                 if (activity != null) {
                     FeatureFactory.getFactory(activity).getSearchFeatureProvider().initSearchToolbar(activity /* activity */, searchView, (View) searchIcon, SettingsEnums.SETTINGS_HOMEPAGE);
