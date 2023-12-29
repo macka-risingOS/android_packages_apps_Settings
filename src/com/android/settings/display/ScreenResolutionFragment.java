@@ -157,32 +157,27 @@ public class ScreenResolutionFragment extends RadioButtonPickerFragment {
         int width = resolutionPoint.x;
         int height = resolutionPoint.y;
 
-        Display.Mode switchMode = new Display.Mode(width, height, getDisplayMode().getRefreshRate());
+        Display.Mode highMode = new Display.Mode(width, height, getDisplayMode().getRefreshRate());
         Display.Mode fullMode = new Display.Mode(mFullWidth, mFullHeight, getDisplayMode().getRefreshRate());
 
         mDisplayObserver.startObserve();
 
-        // Store settings globally
-        Settings.System.putString(
-                getContext().getContentResolver(),
-                SCREEN_RESOLUTION,
-                switchMode.getPhysicalWidth() + "x" + switchMode.getPhysicalHeight());
-
         try {
             baseDensity = (float) mWm.getBaseDisplayDensity(Display.DEFAULT_DISPLAY);
-            if (resolution == mFullWidth + " x " + mFullHeight) {
+            if (resolution.contains(String.valueOf(mFullWidth))) {
+                updateSettingsStore(fullMode);
                 mDefaultDisplay.setUserPreferredDisplayMode(fullMode);
                 mWm.setForcedDisplaySize(Display.DEFAULT_DISPLAY, (int) fullMode.getPhysicalWidth(), (int) fullMode.getPhysicalHeight());
             } else {
-                mDefaultDisplay.setUserPreferredDisplayMode(switchMode);
-                mWm.setForcedDisplaySize(Display.DEFAULT_DISPLAY, (int) switchMode.getPhysicalWidth(), (int) switchMode.getPhysicalHeight());
+                updateSettingsStore(highMode);
+                mDefaultDisplay.setUserPreferredDisplayMode(highMode);
+                mWm.setForcedDisplaySize(Display.DEFAULT_DISPLAY, (int) highMode.getPhysicalWidth(), (int) highMode.getPhysicalHeight());
             }
             DisplayDensityUtils density = new DisplayDensityUtils(getContext());
             int[] densityValues = density.getDefaultDisplayDensityValues();
             double newDensity = baseDensity * mFullWidth / width;
             int minDistance = Math.abs(densityValues[0] - (int) newDensity);
             int idx = 0;
-
             for (int i = 1; i < densityValues.length; i++) {
                 int dist = Math.abs(densityValues[i] - (int) newDensity);
                 if (dist < minDistance) {
@@ -195,13 +190,24 @@ public class ScreenResolutionFragment extends RadioButtonPickerFragment {
             Log.e(TAG, "setUserPreferredDisplayMode() failed", e);
             return;
         }
+        updateSettingsStatsLog(resolution.contains(String.valueOf(mFullWidth)) ? fullMode : highMode);
+    }
 
+    private void updateSettingsStore(Display.Mode mode) {
+        // Store settings globally
+        Settings.System.putString(
+                getContext().getContentResolver(),
+                SCREEN_RESOLUTION,
+                mode.getPhysicalWidth() + "x" + mode.getPhysicalHeight());
+    }
+
+    private void updateSettingsStatsLog(Display.Mode mode) {
         // Send the atom after resolution changed successfully
         SettingsStatsLog.write(
                 SettingsStatsLog.USER_SELECTED_RESOLUTION,
                 mDefaultDisplay.getUniqueId().hashCode(),
-                switchMode.getPhysicalWidth(),
-                switchMode.getPhysicalHeight());
+                mode.getPhysicalWidth(),
+                mode.getPhysicalHeight());
     }
 
     /** Get the key corresponding to the resolution. */
