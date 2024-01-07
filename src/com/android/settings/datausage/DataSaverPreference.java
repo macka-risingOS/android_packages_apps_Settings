@@ -33,7 +33,10 @@ public class DataSaverPreference extends Preference implements DataSaverBackend.
     }
 
     private void init(Context context, AttributeSet attrs) {
-        setLayoutResource(AdaptivePreferenceUtils.getLayoutResourceId(context, attrs));
+        int layoutRes = AdaptivePreferenceUtils.getLayoutResourceId(context, attrs);
+        if (layoutRes != -1) {
+            setLayoutResource(layoutRes);
+        }
     }
 
     @Override
