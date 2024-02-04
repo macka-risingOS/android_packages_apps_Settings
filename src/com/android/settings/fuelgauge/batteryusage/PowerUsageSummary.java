@@ -181,9 +181,15 @@ public class PowerUsageSummary extends PowerUsageBase implements
         final List<Preference> allPreferences = PreferenceUtils.getAllPreferences(screen);
         for (Preference preference : allPreferences) {
             if (preference != null && preference.getKey() != null) {
-                boolean isBatteryWidgetPreference = preference.getKey().equals("dashboard_tile_pref_com.google.android.settings.intelligence.modules.batterywidget.impl.BatteryWidgetPromoActivity");
+                final boolean isBatteryWidgetPreference = 
+                    preference.getKey().equals("dashboard_tile_pref_com.google.android.settings.intelligence.modules.batterywidget.impl.BatteryWidgetPromoActivity");
+                final boolean isExtraPreferences = preference.getKey().equals("battery_lights") 
+                        || preference.getKey().equals("charging_control")
+                        || preference.getKey().equals("fast_charging");
                 if (isBatteryWidgetPreference) {
                     preference.setLayoutResource(R.layout.top_level_preference_solo_card);
+                } else if (isExtraPreferences) {
+                    preference.setLayoutResource(R.layout.top_level_preference_middle_card);
                 }
             }
         }
