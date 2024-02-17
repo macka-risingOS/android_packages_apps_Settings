@@ -84,13 +84,7 @@ public class DeviceNamePreferenceController extends BasePreferenceController
         mPreference.setSummary(deviceName);
         mPreference.setText(deviceName.toString());
         mPreference.setValidator(this);
-        final Preference accountPreference = screen.findPreference("branded_account");
-        final boolean accountPrefAvailable = accountPreference != null && (mAccounts != null && mAccounts.length > 0);
-        if (!SubscriptionUtil.isSimHardwareVisible(mContext) && !accountPrefAvailable) {
-            mPreference.setLayoutResource(R.layout.top_level_preference_solo_card);
-        } else {
-            mPreference.setLayoutResource(R.layout.top_level_preference_top_card);
-        }
+        mPreference.setLayoutResource(R.layout.top_level_preference_top_card);
     }
 
     private void initializeDeviceName() {

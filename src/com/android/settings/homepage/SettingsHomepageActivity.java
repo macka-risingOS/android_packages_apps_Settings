@@ -241,6 +241,7 @@ public class SettingsHomepageActivity extends FragmentActivity implements
                 int totalScrollRange = appBarLayout.getTotalScrollRange();
 
                 if (Math.abs(verticalOffset) == totalScrollRange) {
+                    mMainFragment.showSearchPreference(false);
                     fabSearch.show();
                     fabSearch.postOnAnimationDelayed(new Runnable() {
                         @Override
@@ -254,6 +255,7 @@ public class SettingsHomepageActivity extends FragmentActivity implements
                         @Override
                         public void run() {
                             fabSearch.hide();
+                            mMainFragment.showSearchPreference(true);
                         }
                     }, 100);
                 }

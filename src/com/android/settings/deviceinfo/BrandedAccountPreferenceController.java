@@ -74,9 +74,9 @@ public class BrandedAccountPreferenceController extends BasePreferenceController
         }
         
         if (!SubscriptionUtil.isSimHardwareVisible(mContext)) {
-            accountPreference.setLayoutResource(R.layout.top_level_preference_bottom_card);
+            accountPreference.setLayoutResource(R.layout.top_level_preference_solo_card);
         } else {
-            accountPreference.setLayoutResource(R.layout.top_level_preference_middle_card);
+            accountPreference.setLayoutResource(R.layout.top_level_preference_top_card);
         }
     }
 

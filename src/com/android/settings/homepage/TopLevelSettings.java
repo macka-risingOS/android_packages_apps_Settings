@@ -278,7 +278,16 @@ public class TopLevelSettings extends DashboardFragment implements SplitLayoutLi
             }
         }
     }
-    
+
+    public void showSearchPreference(boolean visible) {
+        final LayoutPreference searchWidgetPreference =
+                (LayoutPreference) getPreferenceScreen().findPreference("top_level_search_widget");
+        if (searchWidgetPreference != null) {
+            final View searchView = searchWidgetPreference.findViewById(R.id.search_widget);
+            searchView.setVisibility(visible ? View.VISIBLE : View.INVISIBLE);
+        }
+    }
+
     private void setUpAvatarView(ImageView avatarView) {
         final Drawable avatarDrawable = getCircularUserIcon(getActivity());
         avatarView.setImageDrawable(avatarDrawable);
