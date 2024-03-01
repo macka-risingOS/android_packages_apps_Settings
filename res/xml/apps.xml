@@ -49,21 +49,21 @@
         settings:searchable="false"/>
 
     <com.android.settings.preferences.ui.AdaptivePreference
-        android:key="all_app_infos"
-        android:title="@string/all_apps"
-        android:summary="@string/summary_placeholder"
-        android:order="-997"
-        android:fragment="com.android.settings.applications.manageapplications.ManageApplications"
-        settings:position="top"
-        settings:keywords="@string/keywords_applications_settings"/>
-
-    <com.android.settings.preferences.ui.AdaptivePreference
         android:key="default_apps"
         android:title="@string/app_default_dashboard_title"
-        android:order="-996"
+        android:order="-997"
+        settings:position="top"
         settings:controller="com.android.settings.applications.DefaultAppsPreferenceController">
         <intent android:action="android.settings.MANAGE_DEFAULT_APPS_SETTINGS"/>
     </com.android.settings.preferences.ui.AdaptivePreference>
+
+    <Preference
+        android:key="all_app_infos"
+        android:title="@string/all_apps"
+        android:summary="@string/summary_placeholder"
+        android:order="-996"
+        android:fragment="com.android.settings.applications.manageapplications.ManageApplications"
+        settings:keywords="@string/keywords_applications_settings"/>
 
     <com.android.settings.preferences.ui.AdaptivePreference
         android:key="cloned_apps"
